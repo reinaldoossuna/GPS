@@ -8,14 +8,10 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.0.2
 #   kernelspec:
-#     display_name: Python [conda env:ic] *
+#     display_name: Python [conda env:ic]
 #     language: python
 #     name: conda-env-ic-py
 # ---
-
-# Code from:
-#
-# http://programmingadvent.blogspot.com/2013/06/kmzkml-file-parsing-with-python.html
 
 # +
 from zipfile import ZipFile
@@ -24,9 +20,7 @@ filename = "DATA/RBMC_2017.kmz"
 
 kmz = ZipFile(filename, 'r')
 kml = kmz.open("doc.kml",'r')
-# -
 
-kml.read()
 
 # +
 import xml.sax, xml.sax.handler
@@ -70,8 +64,8 @@ class PlacemarkHandler(xml.sax.handler.ContentHandler):
         self.buffer = ""
 
 
-# -
 
+# +
 parser = xml.sax.make_parser()
 handler = PlacemarkHandler()
 parser.setContentHandler(handler)
@@ -82,27 +76,25 @@ kmz.close()
 def build_table(mapping):
     sep = ','
         
-    output = 'Name' + sep + 'Coordinates\n'
-    points = ''
+    output = 'Name' + sep + 'lat' + sep + "long" + "\n"
+
     lines = ''
-    shapes = ''
+
     for key in mapping:
-        coord_str = mapping[key]['coordinates'] + sep
-        
-        if 'LookAt' in mapping[key]: #points
-            points += key + sep + coord_str + "\n"
-        elif 'LineString' in mapping[key]: #lines
-            lines += key + sep + coord_str + "\n"
-        else: #shapes
-            shapes += key + sep + coord_str + "\n"
-    output += points + lines + shapes
+        coord_str = mapping[key]['coordinates']
+        coord_str = coord_str.strip().split(",")
+        lat = coord_str[1]
+        long = coord_str[0]
+        lines += key + sep + lat + sep + long + "\n"
+    output +=  lines
     return output
 
+
+
+# -
 
 outstr = build_table(handler.mapping)
 out_filename = filename[:-3] + "csv" #output filename same as input plus .csv
 f = open(out_filename, "w")
 f.write(outstr)
 f.close()
-
-
