@@ -1,5 +1,6 @@
 Dados_GNSS_abril_2016_Bacia_Parana/
 Dados_GNSS_abril_2016_Bacia_Parana.rar
 DATA/
-*.ipynb
 .ipynb_checkpoints/*
+spotl/*
+spotl.tar.gz 

@@ -30,7 +30,7 @@ grace_data = list(data_path.glob("GRCTellus*"))
 grace_data
 
 nc = Dataset(grace_data[0], mode="r")
-nc
+
 
 nc.variables.keys()
 
@@ -68,9 +68,6 @@ def find_nearest(array, value,n=1):
     return np.sort(idxs)[::-1].flatten()
 
 
-find_nearest(lat_gleam,braz_lat_long[0],4)
-
-
 def make_mask(src,list_x,list_y):
     src = np.asarray(src)
     mask = np.full_like(src,False,dtype=bool)
@@ -81,12 +78,12 @@ def make_mask(src,list_x,list_y):
     return mask
 
 
-list_x = find_nearest(lat_gleam,braz_lat_long[0],4)
-list_y = find_nearest(lon_gleam,360+braz_lat_long[1],4)
-
-lwe_thickness_gleam.shape
+# +
+list_x = find_nearest(lat_gleam,braz_lat,2)
+list_y = find_nearest(lon_gleam,braz_long,2)
 
 mask = make_mask(lwe_thickness_gleam[0],list_x,list_y)
+# -
 
 mask
 
@@ -153,22 +150,35 @@ df.head()
 
 df = df.groupby(pd.Grouper(freq="M")).mean().dropna(how="all")
 
+df.head()
+
 
 def get_df(graces,station):
     dfs = []
-    lat = station[lat]
-    long = station[long]
+    lat = station["lat"]
+    long = station["long"]
     for grace in grace_data:
         dfs.append(read_data(grace,lat,long,[2,3,4]))
     df = pd.concat(dfs,sort=True)
     df = df.groupby(pd.Grouper(freq="M")).mean().dropna(how="all")
-    
-    df.to_csv(station.name)
+    file_name = "DATA/GRACE/STATIONS/" + station.name + ".csv"
+    df.to_csv(file_name,index_label="DATE")
 
 
 
-df.head()
+station = pd.Series({"lat":braz_lat,
+                    "long":braz_long},name="BRAZ")
+station["lat"]
 
-df.mean(axis=1)
+get_df(grace_data,station)
+pd.read_csv("DATA/GRACE/STATIONS/BRAZ.csv")
+
+stations = pd.read_csv("DATA/RBMC_2017.csv",index_col="Name")
+stations.long = 360 + stations.long 
+
+
+for station in stations.index:
+    #print(station)
+    get_df(grace_data,stations.loc[station])
 
 
